@@ -142,6 +142,17 @@ function Salsa._previous_output_internal(
     return previous_output
 end
 
+function print_for_performance_callback(io::IO, key::DerivedKey{F,TT}) where {F,TT}
+    print(io, F)
+    print(io, "(")
+    for (i,v) in enumerate(key.args)
+        if i>1
+            print(io, ", ")
+        end
+        print(io, typeof(i))
+    end
+    print(io, ")")
+end
 
 function Salsa._memoized_lookup_internal(
     runtime::Salsa._TracingRuntimeWithStorage{DefaultStorage},
@@ -257,8 +268,8 @@ function Salsa._memoized_lookup_internal(
                     performance_tracing_callback = unsafe_load(runtime.tl_runtime).performance_tracing_callback
 
                     if performance_tracing_callback !==nothing
-                        performance_tracing_callback(string(key), start_time, duration)
-                    end                  
+                        performance_tracing_callback(sprint(print_for_performance_callback, key), start_time, duration)
+                    end
                 finally
                     # Swap back the dependency vectors so the vector isn't modified by
                     # future traces.
@@ -277,8 +288,8 @@ function Salsa._memoized_lookup_internal(
                     performance_tracing_callback = unsafe_load(runtime.tl_runtime).performance_tracing_callback
 
                     if performance_tracing_callback !==nothing
-                        performance_tracing_callback(string(key), start_time, duration)
-                    end                  
+                        performance_tracing_callback(sprint(print_for_performance_callback, key), start_time, duration)
+                    end
             end
             # NOTE: We use `isequal` for the Early Exit Optimization, since values are
             # required to be purely immutable (but not necessarily julia `immutable
