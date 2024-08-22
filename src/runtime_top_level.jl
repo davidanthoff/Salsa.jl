@@ -24,6 +24,13 @@ mutable struct _TopLevelRuntime{CT,ST<:AbstractSalsaStorage} <: Runtime{CT,ST}
 
     # The storage is where all the tracking of state and invalidation happens.
     storage::ST
+
+    # This is used for performance tracing
+    performance_tracing_callback::Union{Nothing,Function}
+
+    function _TopLevelRuntime{CT,ST}(context::CT, storage::ST) where {CT,ST<:AbstractSalsaStorage}
+        return new{CT,ST}(context, storage, nothing)
+    end
 end
 
 ########## Implementation of Runtime API

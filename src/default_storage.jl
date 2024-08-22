@@ -246,7 +246,19 @@ function Salsa._memoized_lookup_internal(
                 existing_value.dependencies, trace.ordered_deps =
                     trace.ordered_deps, existing_value.dependencies
                 try
+                    start_time = time()
+                    tic = time_ns()
+
                     v = user_func(runtime, key.args...)
+
+                    toc = time_ns()
+                    duration = (toc - tic) / 1e+6
+
+                    performance_tracing_callback = unsafe_load(runtime.tl_runtime).performance_tracing_callback
+
+                    if performance_tracing_callback !==nothing
+                        performance_tracing_callback(string(key), start_time, duration)
+                    end                  
                 finally
                     # Swap back the dependency vectors so the vector isn't modified by
                     # future traces.
@@ -254,7 +266,19 @@ function Salsa._memoized_lookup_internal(
                         trace.ordered_deps, existing_value.dependencies
                 end
             else
-                v = user_func(runtime, key.args...)
+                start_time = time()
+                    tic = time_ns()
+
+                    v = user_func(runtime, key.args...)
+
+                    toc = time_ns()
+                    duration = (toc - tic) / 1e+6
+
+                    performance_tracing_callback = unsafe_load(runtime.tl_runtime).performance_tracing_callback
+
+                    if performance_tracing_callback !==nothing
+                        performance_tracing_callback(string(key), start_time, duration)
+                    end                  
             end
             # NOTE: We use `isequal` for the Early Exit Optimization, since values are
             # required to be purely immutable (but not necessarily julia `immutable
